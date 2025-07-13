@@ -1,9 +1,11 @@
 import express from 'express';
 import { submitResult, getResultsByStudent } from '../controllers/resultController';
+import {requireRole, verifyToken} from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
-router.post('/submit', submitResult);
-router.get('/student/:studentId', getResultsByStudent);
+router.post('/submit', verifyToken, requireRole('ogrenci'), submitResult);
+router.get('/student/:studentId', verifyToken, requireRole('ogrenci'), getResultsByStudent);
+
 
 export default router;

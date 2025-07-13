@@ -7,6 +7,7 @@ import  connectDB from './config/db';
 import classRoutes from './routes/classRoutes';
 import testRoutes from './routes/testRoutes';
 import resultRoutes from './routes/resultRoutes';
+import reportRoutes from "./routes/reportRoutes";
 
 connectDB();
 dotenv.config();
@@ -23,6 +24,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api/results', resultRoutes);
+app.use('/api/reports', reportRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
