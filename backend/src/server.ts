@@ -6,6 +6,8 @@ import cors from 'cors';
 import  connectDB from './config/db';
 import classRoutes from './routes/classRoutes';
 import testRoutes from './routes/testRoutes';
+import resultRoutes from './routes/resultRoutes';
+
 connectDB();
 dotenv.config();
 
@@ -20,6 +22,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/tests', testRoutes);
+app.use('/api/results', resultRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
