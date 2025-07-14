@@ -5,7 +5,8 @@ import {requireRole, verifyToken} from "../middlewares/authMiddleware";
 const router = express.Router();
 
 router.post('/submit', verifyToken, requireRole('ogrenci'), submitResult);
-router.get('/student/:studentId', verifyToken, requireRole('ogrenci'), getResultsByStudent);
+
+router.get('/student/:studentId', verifyToken, getResultsByStudent);
 
 
 export default router;

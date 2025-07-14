@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { ClassModel } from '../models/Class';
 import { User } from '../models/User';
-import { Types } from 'mongoose';
 
 // Yeni sınıf oluştur
 export const createClass = async (req: Request, res: Response) => {
@@ -18,8 +17,8 @@ export const createClass = async (req: Request, res: Response) => {
 
 // Belirli öğretmene ait sınıflar
 export const getClasses = async (req: Request, res: Response) => {
-    const { ogretmenId } = req.params;
 
+    const { ogretmenId } = req.params;
     try {
         const siniflar = await ClassModel.find({ ogretmenId });
         res.json(siniflar);

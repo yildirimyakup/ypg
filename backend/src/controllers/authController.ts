@@ -21,13 +21,14 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-    const { email, sifre } = req.body;
+    const { email, sifre, rol } = req.body;
 
     try {
-        const kullanici = await User.findOne({ email });
+        const kullanici = rol ==  "ogretmen" ? await User.findOne({ email }) :await User.findOne({ kod:sifre }) ;
+
         if (!kullanici) return res.status(404).json({ mesaj: 'Kullanıcı bulunamadı.' });
 
-        const dogruMu = await bcrypt.compare(sifre, kullanici.sifreHash);
+        const dogruMu = rol ==  "ogretmen" ? await bcrypt.compare(sifre, kullanici.sifreHash) : true;
         if (!dogruMu) return res.status(401).json({ mesaj: 'Şifre hatalı.' });
 
         const token = jwt.sign(
@@ -36,7 +37,7 @@ export const login = async (req: Request, res: Response) => {
             { expiresIn: '2d' }
         );
 
-        res.json({ token, kullanici: { id: kullanici._id, ad: kullanici.ad, rol: kullanici.rol } });
+        res.json({ token, kullanici: { id: kullanici._id, ad: kullanici.ad, rol: kullanici.rol, sinifId:kullanici.sinifId} });
     } catch (err) {
         res.status(500).json({ mesaj: 'Sunucu hatası.' });
     }

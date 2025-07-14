@@ -40,7 +40,7 @@ export const submitResult = async (req: Request, res: Response) => {
 };
 
 // 2. Öğrencinin geçmiş sonuçlarını getir
-export const getResultsByStudent = async (req: Request, res: Response) => {
+export const getResultsByStudent1 = async (req: Request, res: Response) => {
     const { studentId } = req.params;
 
     try {
@@ -50,3 +50,34 @@ export const getResultsByStudent = async (req: Request, res: Response) => {
         res.status(500).json({ mesaj: 'Sonuçlar getirilemedi.' });
     }
 };
+
+
+export const getResultsByStudent = async (req: Request, res: Response) => {
+    const { studentId } = req.params;
+
+    try {
+        const sonucListesi = await Result.find({ ogrenciId: studentId })
+            .populate({
+                path: 'testId',
+                populate: {
+                    path: 'soruListesi', // Test modelindeki dizi
+                    model: 'Question'
+                }
+            });
+        console.log(sonucListesi);
+
+        // Her sonuç nesnesine test sorularını açıkça ekle
+        const enrichedResults = sonucListesi.map((sonuc:any) => {
+            const testSorulari = sonuc.testId?.soruListesi || [];
+            return {
+                ...sonuc.toObject(),
+                testSorulari
+            };
+        });
+
+        res.json(enrichedResults);
+    } catch (err) {
+        res.status(500).json({ mesaj: 'Sonuçlar getirilemedi.' });
+    }
+};
+

@@ -17,7 +17,6 @@ declare global {
 // Token doğrulama
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
-
     if (!authHeader || !authHeader.startsWith('Bearer '))
         return res.status(401).json({ mesaj: 'Token eksik' });
 

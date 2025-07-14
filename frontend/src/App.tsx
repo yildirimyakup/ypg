@@ -1,35 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LandingPage from './features/landing/LandingPage';
+import TeacherLogin from './features/auth/TeacherLogin';
+import TeacherRegister from './features/auth/TeacherRegister';
+import StudentLogin from './features/auth/StudentLogin';
+import PrivateRoute from './routes/PrivateRoute';
+import { AuthProvider } from './context/AuthContext';
+import TeacherLayout from "./layouts/TeacherLayout.tsx";
+import TeacherDashboard from "./features/dashboard/TeacherDashboard.tsx";
+import TestsPage from "./features/dashboard/TestsPage.tsx";
+import ReportsPage from "./features/dashboard/ReportsPage.tsx";
+import ClassesPage from "./features/dashboard/ClassesPage.tsx";
+import StudentLayout from './layouts/StudentLayout.tsx';
+import StudentDashboard from "./features/student/StudentDashboard.tsx";
+import AssignedTests from './features/student/AssignedTests.tsx';
+import SolveTestPage from "./features/student/SolveTestPage.tsx";
+import MyResultsPage from "./features/student/MyResultsPage.tsx";
 
-function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+const App = () => {
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login/ogretmen" element={<TeacherLogin />} />
+                    <Route path="/login/ogrenci" element={<StudentLogin />} />
+                    <Route path="/register/ogretmen" element={<TeacherRegister />} />
 
-export default App
+                    <Route
+                        path="/dashboard/ogretmen"
+                        element={
+                            <PrivateRoute requiredRole="ogretmen">
+                                <TeacherLayout />
+                            </PrivateRoute>
+                        }
+                    >
+                        <Route index element={<TeacherDashboard />} />
+                        <Route path="classes" element={<ClassesPage />} />
+                        <Route path="tests" element={<TestsPage />} />
+                        <Route path="reports" element={<ReportsPage />} />
+                    </Route>
+                    <Route path="/dashboard/ogrenci" element={
+                        <PrivateRoute requiredRole="ogrenci">
+                            <StudentLayout />
+                        </PrivateRoute>
+                    }>
+                        <Route index element={<StudentDashboard />} />
+                        <Route path="assigned" element={<AssignedTests />} />
+                        <Route path="solve/:testId" element={<SolveTestPage />} />
+                        <Route path="results" element={<MyResultsPage />} />
+                    </Route>
+
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
+    );
+};
+
+export default App;

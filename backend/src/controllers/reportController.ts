@@ -24,6 +24,7 @@ export const getClassReport = async (req: Request, res: Response) => {
 
                 return {
                     ogrenciAd: ogrenci?.ad,
+                    ogrenciId:ogrenci?._id,
                     testSayisi: puanlar.length,
                     ortalama
                 };
