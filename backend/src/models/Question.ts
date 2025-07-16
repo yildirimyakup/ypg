@@ -1,17 +1,23 @@
-import { Schema, model, Document } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface IQuestion extends Document {
-    tip: 'coktan_secmeli' | 'dogru_yanlis';
-    icerik: string;
-    secenekler?: string[];
-    cevap: string;
-}
+const questionSchema = new mongoose.Schema({
+    icerik: {
+        type: String,
+        required: true
+    },
+    secenekler: {
+        type: [String],
+        required: true
+    },
+    cevap: {
+        type: String,
+        required: true
+    },
+    tip: {
+        type: String,
+        enum: ['coktan_secmeli', 'dogru_yanlis'],
+        required: true
+    }
+}, { timestamps: true });
 
-const questionSchema = new Schema<IQuestion>({
-    tip: { type: String, enum: ['coktan_secmeli', 'dogru_yanlis'], required: true },
-    icerik: { type: String, required: true },
-    secenekler: [String],
-    cevap: { type: String, required: true }
-});
-
-export const Question = model<IQuestion>('Question', questionSchema);
+export default mongoose.model('Question', questionSchema);

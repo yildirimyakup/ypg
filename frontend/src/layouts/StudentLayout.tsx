@@ -2,89 +2,98 @@ import {
     AppBar,
     Box,
     CssBaseline,
-    Drawer,
-    IconButton,
-    List,
-    ListItemButton,
-    ListItemText,
     Toolbar,
     Typography,
-    Button
+    Button,
+    Stack,
+    Avatar,
+    Menu,
+    MenuItem
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useState } from 'react';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AccessTimeIcon from '@mui/icons-material/AccessTime'; // saat ikonu
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const drawerWidth = 220;
-
-const menuItems = [
-    { label: 'Testlerim', path: '/dashboard/ogrenci/assigned' },
-    { label: 'Sonuçlarım', path: '/dashboard/ogrenci/results' }
-];
+import { useEffect, useState } from 'react';
 
 const StudentLayout = () => {
-    const [mobileOpen, setMobileOpen] = useState(false);
     const navigate = useNavigate();
     const { ad, logout } = useAuth();
 
-    const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [zaman, setZaman] = useState<string>(new Date().toLocaleTimeString('tr-TR'));
 
-    const drawer = (
-        <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ my: 2 }}>Öğrenci Paneli</Typography>
-            <List>
-                {menuItems.map((item) => (
-                    <ListItemButton key={item.label} onClick={() => navigate(item.path)}>
-                        <ListItemText primary={item.label} />
-                    </ListItemButton>
-                ))}
-            </List>
-        </Box>
-    );
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setZaman(new Date().toLocaleTimeString('tr-TR'));
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
 
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <CssBaseline />
 
-            <AppBar component="nav" position="fixed" sx={{ bgcolor: 'primary.main' }}>
-                <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        onClick={handleDrawerToggle}
-                        sx={{ mr: 2, display: { sm: 'none' } }}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                        Hoş geldin, {ad}
-                    </Typography>
-                    <Button color="inherit" onClick={() => { logout(); navigate('/'); }}>
-                        Çıkış Yap
-                    </Button>
+            <AppBar position="fixed" sx={{ bgcolor: '#1e3d2f' }}>
+                <Toolbar sx={{ justifyContent: 'space-between' }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <MenuBookIcon />
+                        <Typography variant="h6" sx={{ fontFamily: 'cursive' }}>
+                            Hoş geldin, {ad}
+                        </Typography>
+                    </Stack>
+
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <AccessTimeIcon fontSize="small" sx={{ color: '#ffffffaa' }} />
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', color: '#ffffffcc' }}>
+                                {zaman}
+                            </Typography>
+                        </Stack>
+
+                        <Button color="inherit" onClick={() => navigate('/dashboard/ogrenci/assigned')}>
+                            Testlerim
+                        </Button>
+                        <Button color="inherit" onClick={() => navigate('/dashboard/ogrenci/results')}>
+                            Sonuçlarım
+                        </Button>
+
+                        <Avatar
+                            onClick={handleMenuOpen}
+                            sx={{ bgcolor: '#f5b041', cursor: 'pointer' }}
+                        >
+                            {ad?.[0]?.toUpperCase() || '?'}
+                        </Avatar>
+
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={handleMenuClose}
+                        >
+                            <MenuItem onClick={handleMenuClose}>Profil</MenuItem>
+                            <MenuItem
+                                onClick={() => {
+                                    handleMenuClose();
+                                    logout();
+                                    navigate('/');
+                                }}
+                            >
+                                Çıkış Yap
+                            </MenuItem>
+                        </Menu>
+                    </Stack>
                 </Toolbar>
             </AppBar>
 
-            <Box component="nav">
-                <Drawer
-                    variant="temporary"
-                    open={mobileOpen}
-                    onClose={handleDrawerToggle}
-                    ModalProps={{ keepMounted: true }}
-                    sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: drawerWidth } }}
-                >
-                    {drawer}
-                </Drawer>
-                <Drawer
-                    variant="permanent"
-                    sx={{ display: { xs: 'none', sm: 'block' }, '& .MuiDrawer-paper': { width: drawerWidth } }}
-                    open
-                >
-                    {drawer}
-                </Drawer>
-            </Box>
-
-            <Box component="main" sx={{ flexGrow: 1, p: 3, ml: { sm: `${drawerWidth}px` }, mt: 8 }}>
+            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
                 <Outlet />
             </Box>
         </Box>

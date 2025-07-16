@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Result } from '../models/Result';
-import { Test } from '../models/Test';
-import { Question } from '../models/Question';
+import Test  from '../models/Test';
+import  Question  from '../models/Question';
 
 // 1. Öğrenci test çözdüğünde sonucu kaydet
 export const submitResult = async (req: Request, res: Response) => {

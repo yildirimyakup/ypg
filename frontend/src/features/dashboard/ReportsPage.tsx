@@ -1,158 +1,122 @@
 import {
-    Box, Typography, Select, MenuItem, InputLabel, FormControl,
-    Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Dialog, DialogTitle, DialogContent, Stack
+    Box, Typography
+
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-
-interface ClassData {
-    _id: string;
-    ad: string;
-}
+import { type GridColDef } from '@mui/x-data-grid';
+import {TestShowDialog} from "./components/reports/TestShowDialog.tsx";
+import {StudentShowDialog} from "./components/reports/StudentShowDialog.tsx";
+import {DataStudentComponent} from "./components/reports/DataStudentComponent.tsx";
+import {DataTestComponent} from "./components/reports/DataTestComponent.tsx";
+import {SelectTypeComponent} from "./components/reports/SelectTypeComponent.tsx";
+import {useStudentReportHandler} from "./helpers/reports/useStudentReportHandler.ts";
+import {useAllTestReportHandler} from "./helpers/reports/useAllTestReportHandler.ts";
+import {useTestStatisticHandler} from "./helpers/reports/useTestStatisticHandler.ts";
+import {useTestReportHandler} from "./helpers/reports/useTestReportHandler.ts";
 
 const ReportsPage = () => {
+    const{raporlar,fetchAllStudentReports}= useStudentReportHandler();
+    const{testler,fetchAllTests}= useAllTestReportHandler();
+    const {modalTestAcik,setModalTestAcik,testIstatistik,setTestIstatistik,fetchTestStatistics}=useTestStatisticHandler();
+    const {cozulmemisTestler,testSonuclari,seciliOgrenciAd,fetchTestResults}=useTestReportHandler();
+
     const token = localStorage.getItem('token');
     const ogretmenId = localStorage.getItem('id');
-    const [siniflar, setSiniflar] = useState<ClassData[]>([]);
-    const [seciliSinif, setSeciliSinif] = useState('');
-    const [raporlar, setRaporlar] = useState<any[]>([]);
-    const [sinifOrt, setSinifOrt] = useState<number | null>(null);
-
-    const [seciliOgrenciAd, setSeciliOgrenciAd] = useState('');
-    const [testSonuclari, setTestSonuclari] = useState<any[]>([]);
+    const [testArama, setTestArama] = useState('');
+    const [secim, setSecim] = useState<'ogrenci' | 'test'>('ogrenci');
     const [modalAcik, setModalAcik] = useState(false);
+    const [ogrenciArama, setOgrenciArama] = useState('');
 
-    const fetchClasses = async () => {
-        const res = await axios.get(`http://localhost:3000/api/classes/${ogretmenId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        setSiniflar(res.data);
-    };
+    const filteredRows = raporlar.filter((ogr) =>
+        ogr.ogrenciAd.toLowerCase().includes(ogrenciArama.toLowerCase())
+    );
+    const filtreliTestler = testler.filter((t) =>
+        t.baslik.toLowerCase().includes(testArama.toLowerCase())
+    );
 
-    const fetchReport = async (classId: string) => {
-        const res = await axios.get(`http://localhost:3000/api/reports/class/${classId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        setRaporlar(res.data.ogrenciler); // ogrenciAd, ogrenciId, ortalama, testSayisi
-        setSinifOrt(res.data.sinifOrtalamasi);
-    };
 
-    const fetchTestResults = async (ogrenciId: string, ogrenciAd: string) => {
-        try {
-            const res = await axios.get(`http://localhost:3000/api/results/student/${ogrenciId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            setSeciliOgrenciAd(ogrenciAd);
-            setTestSonuclari(res.data);
-            setModalAcik(true);
-        } catch {
-            console.error('Test sonuçları alınamadı.');
+    const ogrenciColumns: GridColDef[] = [
+        {
+            field: 'ogrenciAd',
+            headerName: 'Öğrenci Adı',
+            flex: 1,
+            filterable: true,
+            renderCell: (params) => (
+                <Typography
+                    onClick={() => fetchTestResults(params.row.ogrenciId, params.row.ogrenciAd,token,setModalAcik)}
+                    sx={{ cursor: 'pointer', color: 'primary.main', textDecoration: 'underline' }}
+                >
+                    {params.row.ogrenciAd}
+                </Typography>
+            )
+        },
+        {
+            field: 'sinifAd',
+            headerName: 'Sınıf',
+            width: 150,
+            filterable: true
+        },
+        {
+            field: 'testSayisi',
+            headerName: 'Test Sayısı',
+            width: 130,
+            filterable: true
+        },
+        {
+            field: 'ortalama',
+            headerName: 'Ortalama',
+            width: 130,
+            filterable: true
         }
-    };
+    ];
+
+
+    const testColumns: GridColDef[] = [
+        { field: 'baslik', headerName: 'Test Adı', flex: 1 },
+        { field: 'soruSayisi', headerName: 'Soru Sayısı', width: 150 },
+        {
+            field: 'siniflar',
+            headerName: 'Atandığı Sınıflar',
+            flex: 1,
+            renderCell: (params: any) => {
+                const siniflar = params.row?.atananSiniflar;
+                if (!Array.isArray(siniflar) || siniflar.length === 0) return '—';
+                return siniflar.map((s: any, index: number) => (
+                    <span key={index}>{s.ad}{index < siniflar.length - 1 ? ', ' : ''}</span>
+                ));
+            }
+        }
+    ];
+
+
+
+
+
+
 
     useEffect(() => {
-        fetchClasses();
+        fetchAllStudentReports(token,ogretmenId);
+        fetchAllTests(token,ogretmenId);
     }, []);
 
-    useEffect(() => {
-        if (seciliSinif) fetchReport(seciliSinif);
-    }, [seciliSinif]);
+
 
     return (
         <Box>
-            <Typography variant="h5" gutterBottom>Raporlama ve Takip</Typography>
+            <Typography variant="h5" sx={{fontFamily:"cursive",mb:3 ,color: "#1e3d2f"}} gutterBottom>Raporlama ve Takip</Typography>
 
-            <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>Sınıf Seç</InputLabel>
-                <Select
-                    value={seciliSinif}
-                    label="Sınıf Seç"
-                    onChange={(e) => setSeciliSinif(e.target.value)}
-                >
-                    {siniflar.map((s) => (
-                        <MenuItem key={s._id} value={s._id}>{s.ad}</MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
+            <SelectTypeComponent secim={secim} setSecim={setSecim} />
 
-            {raporlar.length > 0 && (
-                <>
-                    <Typography variant="subtitle1" gutterBottom>
-                        Sınıf Ortalaması: <strong>{sinifOrt}</strong>
-                    </Typography>
-
-                    <TableContainer component={Paper}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Öğrenci</TableCell>
-                                    <TableCell>Test Sayısı</TableCell>
-                                    <TableCell>Ortalama Puan</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {raporlar.map((ogr, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell
-                                            onClick={() => fetchTestResults(ogr.ogrenciId, ogr.ogrenciAd)}
-                                            sx={{
-                                                cursor: 'pointer',
-                                                color: 'primary.main',
-                                                textDecoration: 'underline'
-                                            }}
-                                        >
-                                            {ogr.ogrenciAd}
-                                        </TableCell>
-                                        <TableCell>{ogr.testSayisi}</TableCell>
-                                        <TableCell>{ogr.ortalama}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </>
+            {secim === 'ogrenci' && (
+                <DataStudentComponent setModalAcik={setModalAcik}  modalAcik={modalAcik} ogrenciColumns={ogrenciColumns} setOgrenciArama={setOgrenciArama} ogrenciArama={ogrenciArama} filteredRows={filteredRows}  />
             )}
+            {secim === 'test' && (
+                <DataTestComponent testArama={testArama} setTestArama={setTestArama} filtreliTestler={filtreliTestler} testColumns={testColumns} fetchTestStatistics={fetchTestStatistics} setTestStatistics={setTestIstatistik} />
+            )}
+            <TestShowDialog modalTestAcik={modalTestAcik} setModalTestAcik={setModalTestAcik} testIstatistik={testIstatistik} />
+            <StudentShowDialog cozulmemisTestler={cozulmemisTestler} testSonuclari={testSonuclari} seciliOgrenciAd={seciliOgrenciAd} setModalAcik={setModalAcik} modalAcik={modalAcik} />
 
-            {/* Modal: Öğrenci Test Sonuçları ve Detayları */}
-            <Dialog open={modalAcik} onClose={() => setModalAcik(false)} maxWidth="md" fullWidth>
-                <DialogTitle>{seciliOgrenciAd} – Test Sonuçları</DialogTitle>
-                <DialogContent>
-                    {testSonuclari.length === 0 ? (
-                        <Typography>Test sonucu bulunamadı.</Typography>
-                    ) : (
-                        <Stack spacing={2}>
-                            {testSonuclari.map((s, i) => (
-                                <Paper key={i} sx={{ p: 2 }}>
-                                    <Typography fontWeight="bold">{s.testId?.baslik}</Typography>
-                                    <Typography>Puan: {s.puan}</Typography>
-                                    <Typography>Geri Bildirim: {s.geribildirim}</Typography>
-                                    <Typography color="text.secondary">
-                                        {new Date(s.tarih).toLocaleString()}
-                                    </Typography>
 
-                                    {/* Soru detayları */}
-                                    {s.testSorulari?.map((soru: any, index: number) => {
-                                        const ogrCevap = s.cevaplar[index];
-                                        const dogruMu = ogrCevap === soru.cevap;
-
-                                        return (
-                                            <Box key={index} mt={2} p={2} bgcolor={dogruMu ? '#e6f7e6' : '#ffebee'} borderRadius={1}>
-                                                <Typography><strong>Soru {index + 1}:</strong> {soru.icerik}</Typography>
-                                                <Typography><strong>Verilen Cevap:</strong> {ogrCevap} {dogruMu ? '✅' : '❌'}</Typography>
-                                                {!dogruMu && (
-                                                    <Typography><strong>Doğru Cevap:</strong> {soru.cevap}</Typography>
-                                                )}
-                                            </Box>
-                                        );
-                                    })}
-                                </Paper>
-                            ))}
-                        </Stack>
-                    )}
-                </DialogContent>
-            </Dialog>
         </Box>
     );
 };

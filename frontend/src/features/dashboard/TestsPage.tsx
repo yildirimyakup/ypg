@@ -1,48 +1,82 @@
+// Yeni TestsPage.tsx
 import {
-    Box, Button, TextField, Typography, MenuItem, Paper, Stack, Alert,
-    Select, InputLabel, FormControl, IconButton
+    Box,
+    Typography,
+    TextField,
+    Button,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Stack,
+    Chip,
+    Select,
+    MenuItem,
+    InputLabel,
+    FormControl,
+    Switch,
+    FormControlLabel,
+    Alert,
+    ButtonGroup
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
+import AddIcon from '@mui/icons-material/Add';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { QuestionFormKomponents } from "./components/tests/QuestionFormKomponents.tsx";
+import { NewQuestionFormComponent } from "./components/tests/NewQuestionFormCompenent.tsx";
+import { QuestionCardComponent } from "./components/tests/QuestionCardComponent.tsx";
 
-interface ClassData {
+interface Soru {
+    _id?: string;
+    icerik: string;
+    cevap: string;
+    secenekler?: string[];
+    tip: 'coktan_secmeli' | 'dogru_yanlis';
+}
+
+interface Test {
+    _id: string;
+    baslik: string;
+    soruListesi: Soru[];
+    atananSiniflar: string[];
+    yayinDurumu: boolean;
+    yayinZamani?: string;
+}
+
+interface Sinif {
     _id: string;
     ad: string;
 }
 
-interface Soru {
-    tip: 'coktan_secmeli' | 'dogru_yanlis';
-    icerik: string;
-    secenekler?: string[];
-    cevap: string;
-}
-
 const TestsPage = () => {
-    const [baslik, setBaslik] = useState('');
-    const [sinifId, setSinifId] = useState('');
-    const [sorular, setSorular] = useState<Soru[]>([]);
-    const [siniflar, setSiniflar] = useState<ClassData[]>([]);
-    const [testler, setTestler] = useState<any[]>([]);
-    const [mesaj, setMesaj] = useState('');
+    const [testler, setTestler] = useState<Test[]>([]);
+    const [search, setSearch] = useState('');
+    const [aktifTestId, setAktifTestId] = useState<string | null>(null);
+    const [siniflar, setSiniflar] = useState<Sinif[]>([]);
     const [hata, setHata] = useState('');
+    const [mesaj, setMesaj] = useState('');
+    const [newQuestionOpen, setNewQuestionOpen] = useState<string | null>(null);
+    const [eklenecekSoru, setEklenecekSoru] = useState<Soru>({
+        tip: 'coktan_secmeli',
+        icerik: '',
+        secenekler: ['', '', '', ''],
+        cevap: ''
+    });
+    const [yeniBaslik, setYeniBaslik] = useState('');
+    const [yeniSorular, setYeniSorular] = useState<Soru[]>([]);
+    const [sorularAcik, setSorularAcik] = useState<boolean>(false);
+    const [editedTests, setEditedTests] = useState<{ [key: string]: Partial<Test> }>({});
+
     const token = localStorage.getItem('token');
-    const id = localStorage.getItem('id');
+    const ogretmenId = localStorage.getItem('id');
 
-    const fetchClasses = async () => {
+    const fetchTests = async () => {
         try {
-            const res = await axios.get(`http://localhost:3000/api/classes/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setSiniflar(res.data);
-        } catch {
-            setHata('Sınıflar alınamadı');
-        }
-    };
-
-    const fetchTests = async (classId: string) => {
-        try {
-            const res = await axios.get(`http://localhost:3000/api/tests/class/${classId}`, {
+            const res = await axios.get(`http://localhost:3000/api/tests/teacher/${ogretmenId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setTestler(res.data);
@@ -51,16 +85,53 @@ const TestsPage = () => {
         }
     };
 
+    const fetchClasses = async () => {
+        try {
+            const res = await axios.get(`http://localhost:3000/api/classes/${ogretmenId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setSiniflar(res.data);
+        } catch {
+            setHata('Sınıflar alınamadı');
+        }
+    };
+
     useEffect(() => {
+        fetchTests();
         fetchClasses();
     }, []);
 
-    useEffect(() => {
-        if (sinifId) fetchTests(sinifId);
-    }, [sinifId]);
+    const filtrelenmisTestler = testler.filter(t => t.baslik.toLowerCase().includes(search.toLowerCase()));
+
+    const handleTestUpdate = async (testId: string) => {
+        const update = editedTests[testId];
+        if (!update) return;
+
+        try {
+            await axios.put(`http://localhost:3000/api/tests/${testId}`, update, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setMesaj("Test güncellendi.");
+            fetchTests();
+        } catch {
+            setHata("Test güncellenemedi.");
+        }
+    };
+
+    const handleTestDelete = async (testId: string) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/tests/${testId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setMesaj("Test silindi.");
+            fetchTests();
+        } catch {
+            setHata("Test silinemedi.");
+        }
+    };
 
     const addSoru = () => {
-        setSorular([...sorular, {
+        setYeniSorular(prev => [...prev, {
             tip: 'coktan_secmeli',
             icerik: '',
             secenekler: ['', '', '', ''],
@@ -68,31 +139,27 @@ const TestsPage = () => {
         }]);
     };
 
-    const handleRemoveSoru = (index: number) => {
-        const yeni = [...sorular];
-        yeni.splice(index, 1);
-        setSorular(yeni);
+    const handleQuestionDelete = async (questionId: string) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/tests/question/${questionId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setMesaj("Soru silindi.");
+            fetchTests();
+        } catch {
+            setHata("Soru silinemedi.");
+        }
     };
 
-    const handleSoruChange = (index: number, field: keyof Soru, value: any) => {
-        const updated = [...sorular];
-        updated[index][field] = value;
-        setSorular(updated);
-    };
-
-    const handleSecenekChange = (soruIndex: number, secenekIndex: number, value: string) => {
-        const updated = [...sorular];
-        updated[soruIndex].secenekler![secenekIndex] = value;
-        setSorular(updated);
-    };
-
-    const handleSubmit = async () => {
-        if (!baslik || !sinifId) return setHata('Başlık ve sınıf seçmelisiniz.');
-        if (sorular.length === 0) return setHata('En az bir soru eklemelisiniz.');
+    const handleYeniTestOlustur = async () => {
+        if (!yeniBaslik || yeniSorular.length === 0) {
+            setHata("Başlık ve en az bir soru zorunludur.");
+            return;
+        }
 
         try {
             const soruIdListesi = [];
-            for (const soru of sorular) {
+            for (const soru of yeniSorular) {
                 const res = await axios.post('http://localhost:3000/api/tests/question', soru, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -100,110 +167,129 @@ const TestsPage = () => {
             }
 
             await axios.post('http://localhost:3000/api/tests/create', {
-                baslik,
-                ogretmenId:id,
-                soruIdListesi,
-                atananSinifId: sinifId
+                baslik: yeniBaslik,
+                ogretmenId,
+                soruIdListesi
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            setMesaj('Test oluşturuldu');
-            setBaslik('');
-            setSinifId('');
-            setSorular([]);
-            fetchTests(sinifId);
+            setMesaj('Yeni test oluşturuldu.');
+            setYeniBaslik('');
+            setYeniSorular([]);
+            fetchTests();
         } catch {
-            setHata('Test oluşturulamadı');
+            setHata("Test oluşturulamadı.");
+        }
+    };
+
+    const handleSoruEkle = async (testId: string) => {
+        if (!eklenecekSoru.icerik || !eklenecekSoru.cevap) return;
+
+        try {
+            const res = await axios.post('http://localhost:3000/api/tests/question', eklenecekSoru, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            await axios.put(`http://localhost:3000/api/tests/${testId}/add-question`, {
+                questionId: res.data._id
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setMesaj("Soru eklendi.");
+            setEklenecekSoru({ tip: 'coktan_secmeli', icerik: '', secenekler: ['', '', '', ''], cevap: '' });
+            fetchTests();
+        } catch (err) {
+            setHata("Soru eklenemedi.");
         }
     };
 
     return (
         <Box>
-            <Typography variant="h5" gutterBottom>Test Oluştur</Typography>
-
             {mesaj && <Alert severity="success">{mesaj}</Alert>}
             {hata && <Alert severity="error">{hata}</Alert>}
 
-            <Stack spacing={2} mb={3}>
-                <TextField
-                    label="Test Başlığı"
-                    value={baslik}
-                    onChange={(e) => setBaslik(e.target.value)}
-                />
-                <FormControl fullWidth>
-                    <InputLabel>Sınıf Seç</InputLabel>
-                    <Select
-                        value={sinifId}
-                        label="Sınıf Seç"
-                        onChange={(e) => setSinifId(e.target.value)}
-                    >
-                        {siniflar.map((s) => (
-                            <MenuItem key={s._id} value={s._id}>{s.ad}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Stack>
-
-            {sorular.map((soru, i) => (
-                <Paper key={i} sx={{ p: 2, mb: 2, position: 'relative' }}>
-                    <IconButton
-                        onClick={() => handleRemoveSoru(i)}
-                        sx={{ position: 'absolute', right: 8, top: 8 }}
-                    >
-                        <DeleteIcon />
-                    </IconButton>
-
-                    <Typography variant="subtitle1">Soru {i + 1}</Typography>
-                    <TextField
-                        label="Soru Metni"
-                        fullWidth
-                        sx={{ mb: 2 }}
-                        value={soru.icerik}
-                        onChange={(e) => handleSoruChange(i, 'icerik', e.target.value)}
-                    />
-                    {soru.tip === 'coktan_secmeli' && soru.secenekler?.map((sec, j) => (
-                        <TextField
-                            key={j}
-                            label={`Seçenek ${String.fromCharCode(65 + j)}`}
-                            value={sec}
-                            onChange={(e) => handleSecenekChange(i, j, e.target.value)}
-                            sx={{ mr: 2, mt: 1 }}
-                        />
+            <Box sx={{ border: "0.5px solid green", padding: "10px", marginTop: "15px", marginBottom: "10px", borderRadius: "5px", background: "white" }}>
+                <Typography variant="h3" sx={{ fontFamily: "cursive", color: "#1e3d2f" }} gutterBottom>TESTLERİM</Typography>
+                <Stack direction="column" spacing={2} alignItems="center" mb={3}>
+                    <TextField fullWidth label="Test Başlığı" value={yeniBaslik} onChange={(e) => setYeniBaslik(e.target.value)} sx={{ mb: 2 }} />
+                    {yeniSorular.map((soru, i) => (
+                        <QuestionFormKomponents i={i} setYeniSorular={setYeniSorular} yeniSorular={yeniSorular} soru={soru} key={i} />
                     ))}
-                    <TextField
-                        label="Doğru Cevap"
-                        value={soru.cevap}
-                        onChange={(e) => handleSoruChange(i, 'cevap', e.target.value)}
-                        sx={{ mt: 2 }}
-                    />
-                </Paper>
+                    <ButtonGroup variant={"outlined"} sx={{ width: "100%" }}>
+                        <Button variant="outlined" onClick={addSoru} >+ Soru Ekle</Button>
+                        <Button variant="contained" onClick={handleYeniTestOlustur}>Testi Kaydet</Button>
+                    </ButtonGroup>
+                </Stack>
+            </Box>
+
+            <TextField
+                fullWidth
+                label="Test Ara"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                sx={{ mb: 3 }}
+            />
+
+            {filtrelenmisTestler.map(test => (
+                <Accordion key={test._id} expanded={aktifTestId === test._id} onChange={() => setAktifTestId(prev => prev === test._id ? null : test._id)}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography sx={{ flexGrow: 1 }}>{test.baslik}</Typography>
+                        <Chip label={test.yayinDurumu ? 'Yayında' : 'Taslak'} color={test.yayinDurumu ? 'success' : 'default'} />
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Stack spacing={2}>
+                            <TextField label="Test Başlığı" defaultValue={test.baslik} fullWidth onChange={(e) => {
+                                setEditedTests(prev => ({ ...prev, [test._id]: { ...prev[test._id], baslik: e.target.value } }));
+                            }} />
+
+                            <FormControl fullWidth>
+                                <InputLabel>Sınıflar</InputLabel>
+
+                                <Select multiple defaultValue={test.atananSiniflar} onChange={(e) => {
+                                    const value = e.target.value;
+                                    setEditedTests(prev => ({ ...prev, [test._id]: { ...prev[test._id], atananSiniflar: value as string[] } }));
+                                }}>
+                                    {siniflar.map(s => (
+                                        <MenuItem key={s._id} value={s._id}>{s.ad}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                            <FormControlLabel control={<Switch defaultChecked={test.yayinDurumu} onChange={(e) => {
+                                setEditedTests(prev => ({ ...prev, [test._id]: { ...prev[test._id], yayinDurumu: e.target.checked } }));
+                            }} />} label="Yayında mı?" />
+
+                            <ButtonGroup variant={"outlined"} fullWidth>
+                                <Button variant="outlined" sx={{color:"hotpink",borderColor:"hotpink"}} startIcon={!sorularAcik ? <KeyboardArrowDownIcon /> :<KeyboardArrowUpIcon/>} onClick={() => {sorularAcik ? setSorularAcik(false):setSorularAcik(true)}}>Soruları Göster</Button>
+                                <Button variant="outlined" color="info" startIcon={<AddIcon />} onClick={() => setNewQuestionOpen(test._id)}>Yeni Soru Ekle</Button>
+                                <Button variant="outlined" startIcon={<SaveIcon />} onClick={() => handleTestUpdate(test._id)}>Kaydet</Button>
+                                <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => handleTestDelete(test._id)}>Sil</Button>
+                            </ButtonGroup>
+
+                            <NewQuestionFormComponent
+                                id={test._id}
+                                open={newQuestionOpen === test._id}
+                                onClose={() => setNewQuestionOpen(null)}
+                                eklenecekSoru={eklenecekSoru}
+                                setEklenecekSoru={setEklenecekSoru}
+                                handleSoruEkle={handleSoruEkle}
+                            />
+
+
+                            {sorularAcik && (
+                                test.soruListesi.map((soru, i) => (
+                                        <QuestionCardComponent key={soru._id || i} soru={soru} index={i} handleQuestionDelete={handleQuestionDelete} />
+                                    ))
+                            )}
+
+
+                        </Stack>
+                    </AccordionDetails>
+                </Accordion>
             ))}
 
-            <Stack direction="row" spacing={2}>
-                <Button variant="outlined" onClick={addSoru}>
-                    + Soru Ekle
-                </Button>
-                <Button variant="contained" onClick={handleSubmit}>
-                    Testi Kaydet
-                </Button>
-            </Stack>
-
-            {testler.length > 0 && (
-                <Box mt={4}>
-                    <Typography variant="h6" gutterBottom>Oluşturulmuş Testler</Typography>
-                    {testler.map(test => (
-                        <Paper key={test._id} sx={{ p: 2, mb: 2 }}>
-                            <Typography fontWeight="bold">{test.baslik}</Typography>
-                            <ul>
-                                {test.soruListesi.map((soru: any, i: number) => (
-                                    <li key={i}>{soru.icerik} (Cevap: {soru.cevap})</li>
-                                ))}
-                            </ul>
-                        </Paper>
-                    ))}
-                </Box>
-            )}
         </Box>
     );
 };

@@ -1,8 +1,13 @@
 import {
-    Box, Button, Container, TextField, Typography, Alert
+    Box,
+    Button,
+    Container,
+    TextField,
+    Typography,
+    Alert
 } from '@mui/material';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 
 const TeacherRegister = () => {
@@ -20,8 +25,6 @@ const TeacherRegister = () => {
 
     const validatePassword = (password: string) => {
         return password.length >= 6;
-        // Daha gelişmiş kontrol:
-        // return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password);
     };
 
     const handleRegister = async () => {
@@ -63,8 +66,19 @@ const TeacherRegister = () => {
     };
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 10 }}>
-            <Typography variant="h4" gutterBottom>Öğretmen Kayıt</Typography>
+        <Container
+            maxWidth="sm"
+            sx={{
+                mt: 10,
+                backgroundColor: 'transparent',
+                color: 'white',
+                padding: 3,
+                borderRadius: 2,
+            }}
+        >
+            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', color: 'white' ,fontFamily: ' cursive'}}>
+                ÖĞRETMEN KAYIT
+            </Typography>
 
             {uyari && <Alert severity="warning">{uyari}</Alert>}
             {hata && <Alert severity="error">{hata}</Alert>}
@@ -75,32 +89,74 @@ const TeacherRegister = () => {
                     value={ad}
                     onChange={(e) => setAd(e.target.value)}
                     fullWidth
+                    InputLabelProps={{ style: { color: 'white' } }}
+                    InputProps={{ style: { color: 'white' } }}
+                    sx={{
+                        '& .MuiInput-underline:before': { borderBottomColor: 'white' },
+                        '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottomColor: '#ffffffaa' },
+                        '& .MuiInput-underline:after': { borderBottomColor: 'white' },
+                    }}
+                    variant="standard"
                 />
+
                 <TextField
                     label="Email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     fullWidth
+                    InputLabelProps={{ style: { color: 'white' } }}
+                    InputProps={{ style: { color: 'white' } }}
+                    sx={{
+                        '& .MuiInput-underline:before': { borderBottomColor: 'white' },
+                        '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottomColor: '#ffffffaa' },
+                        '& .MuiInput-underline:after': { borderBottomColor: 'white' },
+                    }}
+                    variant="standard"
                 />
+
                 <TextField
                     label="Şifre"
                     type="password"
                     value={sifre}
                     onChange={(e) => setSifre(e.target.value)}
                     fullWidth
+                    InputLabelProps={{ style: { color: 'white' } }}
+                    InputProps={{ style: { color: 'white' } }}
+                    sx={{
+                        '& .MuiInput-underline:before': { borderBottomColor: 'white' },
+                        '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottomColor: '#ffffffaa' },
+                        '& .MuiInput-underline:after': { borderBottomColor: 'white' },
+                    }}
+                    variant="standard"
                 />
+
                 <TextField
                     label="Şifre (Tekrar)"
                     type="password"
                     value={sifreTekrar}
                     onChange={(e) => setSifreTekrar(e.target.value)}
                     fullWidth
+                    InputLabelProps={{ style: { color: 'white' } }}
+                    InputProps={{ style: { color: 'white' } }}
+                    sx={{
+                        '& .MuiInput-underline:before': { borderBottomColor: 'white' },
+                        '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottomColor: '#ffffffaa' },
+                        '& .MuiInput-underline:after': { borderBottomColor: 'white' },
+                    }}
+                    variant="standard"
                 />
+
                 <Button variant="contained" color="primary" onClick={handleRegister}>
                     Kayıt Ol
                 </Button>
             </Box>
+            <Typography sx={{ margin:3,color: 'white',textAlign: 'end' ,fontFamily: ' cursive',}}>
+
+                <Link to="/login/ogretmen" style={{ color: '#90caf9' }}>
+                   Giriş Yap
+                </Link>
+            </Typography>
         </Container>
     );
 };

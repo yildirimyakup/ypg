@@ -1,19 +1,30 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface ITest extends Document {
-    baslik: string;
-    ogretmenId: Types.ObjectId;
-    soruListesi: Types.ObjectId[];
-    atananSinifId: Types.ObjectId;
-    tarih: Date;
-}
+const testSchema = new mongoose.Schema({
+    baslik: {
+        type: String,
+        required: true
+    },
+    ogretmenId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Öğretmen modeli eğer varsa
+        required: true
+    },
+    soruListesi: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Question'
+    }],
+    atananSiniflar: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Class' // Sınıf modeli varsa bu şekilde
+    }],
+    yayinDurumu: {
+        type: Boolean,
+        default: false
+    },
+    yayinZamani: {
+        type: Date
+    }
+}, { timestamps: true });
 
-const testSchema = new Schema<ITest>({
-    baslik: { type: String, required: true },
-    ogretmenId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    soruListesi: [{ type: Schema.Types.ObjectId, ref: 'Question' }],
-    atananSinifId: { type: Schema.Types.ObjectId, ref: 'Class', required: true },
-    tarih: { type: Date, default: Date.now }
-});
-
-export const Test = model<ITest>('Test', testSchema);
+export default mongoose.model('Test', testSchema);

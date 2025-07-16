@@ -15,17 +15,67 @@ import StudentDashboard from "./features/student/StudentDashboard.tsx";
 import AssignedTests from './features/student/AssignedTests.tsx';
 import SolveTestPage from "./features/student/SolveTestPage.tsx";
 import MyResultsPage from "./features/student/MyResultsPage.tsx";
+import ChalkboardFrame from "./components/ChalkboardFrame.tsx";
+import {Box} from "@mui/material";
 
 
 const App = () => {
     return (
         <AuthProvider>
             <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/login/ogretmen" element={<TeacherLogin />} />
-                    <Route path="/login/ogrenci" element={<StudentLogin />} />
-                    <Route path="/register/ogretmen" element={<TeacherRegister />} />
+                <Routes >
+                    <Route path="/" element={<Box
+                        sx={{
+                            height: '100vh',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: '#f2f2f2', // tema rengiyle uyumlu
+                        }}
+                    >
+                        <ChalkboardFrame>
+                            <LandingPage />
+                        </ChalkboardFrame>
+                    </Box>} />
+                    <Route path="/login/ogretmen" element={<Box
+                        sx={{
+                            height: '100vh',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: '#f2f2f2', // tema rengiyle uyumlu
+                        }}
+                    >
+                        <ChalkboardFrame>
+                            <TeacherLogin />
+                        </ChalkboardFrame>
+                    </Box>} />
+                    <Route path="/login/ogrenci" element={<Box
+                        sx={{
+                            height: '100vh',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: '#f2f2f2', // tema rengiyle uyumlu
+                        }}
+                    >
+                        <ChalkboardFrame>
+                            <StudentLogin />
+                        </ChalkboardFrame>
+                    </Box>} />
+                    <Route path="/register/ogretmen" element={<Box
+                        sx={{
+                            height: '100vh',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: '#f2f2f2', // tema rengiyle uyumlu
+                        }}
+                    >
+                        <ChalkboardFrame>
+                            <TeacherRegister />
+                        </ChalkboardFrame>
+                    </Box>} />
 
                     <Route
                         path="/dashboard/ogretmen"
