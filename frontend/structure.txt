@@ -1,0 +1,60 @@
+.
+├── README.md
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+
+├── src
+│   ├── App.css
+│   ├── App.tsx
+│   ├── assets
+│   │   ├── logo.png
+│   │   └── react.svg
+│   ├── components
+│   │   ├── ChalkboardFrame.tsx
+│   │   ├── CheckedDialog.tsx
+│   │   └── SingleFormDialog.tsx
+│   ├── context
+│   │   └── AuthContext.tsx
+│   ├── features
+│   │   ├── auth
+│   │   │   ├── StudentLogin.tsx
+│   │   │   ├── TeacherLogin.tsx
+│   │   │   └── TeacherRegister.tsx
+│   │   ├── dashboard
+│   │   │   ├── ClassesPage.tsx
+│   │   │   ├── ReportsPage.tsx
+│   │   │   ├── TeacherDashboard.tsx
+│   │   │   ├── TestsPage.tsx
+│   │   │   ├── components
+│   │   │   │   ├── classes
+│   │   │   │   ├── reports
+│   │   │   │   └── tests
+│   │   │   └── helpers
+│   │   │       ├── classes
+│   │   │       └── reports
+│   │   ├── landing
+│   │   │   └── LandingPage.tsx
+│   │   └── student
+│   │       ├── AssignedTests.tsx
+│   │       ├── MyResultsPage.tsx
+│   │       ├── SolveTestPage.tsx
+│   │       ├── StudentDashboard.tsx
+│   │       └── TestResultPage.tsx
+│   ├── index.css
+│   ├── layouts
+│   │   ├── StudentLayout.tsx
+│   │   └── TeacherLayout.tsx
+│   ├── main.tsx
+│   ├── routes
+│   │   └── PrivateRoute.tsx
+│   ├── theme.ts
+│   └── vite-env.d.ts
+├── structure.txt
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+
+20 directories, 40 files

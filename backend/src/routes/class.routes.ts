@@ -1,3 +1,4 @@
+// src/routes/class.routes.ts
 import express from 'express';
 import {
     createClass,
@@ -5,9 +6,11 @@ import {
     addStudentToClass,
     getClass,
     deleteClasss,
-    deleteStudent, updateStudent, updateClass
-} from '../controllers/classController';
-import {requireRole, verifyToken} from "../middlewares/authMiddleware";
+    deleteStudent,
+    updateStudent,
+    updateClass
+} from '../controllers/class.controller';
+import { verifyToken, requireRole } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 

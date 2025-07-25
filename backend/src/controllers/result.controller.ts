@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { Result } from '../models/Result';
 import Test  from '../models/Test';
-import  Question  from '../models/Question';
 
-// 1. Öğrenci test çözdüğünde sonucu kaydet
 export const submitResult = async (req: Request, res: Response) => {
     const { ogrenciId, testId, cevaplar } = req.body;
 
@@ -39,7 +37,6 @@ export const submitResult = async (req: Request, res: Response) => {
     }
 };
 
-// 2. Öğrencinin geçmiş sonuçlarını getir
 export const getResultsByStudent1 = async (req: Request, res: Response) => {
     const { studentId } = req.params;
 

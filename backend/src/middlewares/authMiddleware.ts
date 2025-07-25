@@ -1,18 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
 interface JwtPayload {
     id: string;
     rol: 'ogretmen' | 'ogrenci';
 }
-
-declare global {
-    namespace Express {
-        interface Request {
-            kullanici?: JwtPayload;
-        }
-    }
-}
+declare global { namespace Express { interface Request { kullanici?: JwtPayload;} } }
 
 // Token doğrulama
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {

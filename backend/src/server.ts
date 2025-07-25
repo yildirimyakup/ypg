@@ -1,13 +1,13 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
-import authRoutes from './routes/authRoutes';
+import authRoutes from './routes/auth.routes';
 const app = express();
 import cors from 'cors';
 import  connectDB from './config/db';
-import classRoutes from './routes/classRoutes';
-import testRoutes from './routes/testRoutes';
-import resultRoutes from './routes/resultRoutes';
-import reportRoutes from "./routes/reportRoutes";
+import classRoutes from './routes/class.routes';
+import testRoutes from './routes/test.routes';
+import resultRoutes from './routes/result.routes';
+import reportRoutes from "./routes/report.routes";
 
 connectDB();
 dotenv.config();
