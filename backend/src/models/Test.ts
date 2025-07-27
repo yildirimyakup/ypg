@@ -7,7 +7,7 @@ const testSchema = new mongoose.Schema({
     },
     ogretmenId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Öğretmen modeli eğer varsa
+        ref: 'User',
         required: true
     },
     soruListesi: [{
@@ -16,7 +16,7 @@ const testSchema = new mongoose.Schema({
     }],
     atananSiniflar: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Class' // Sınıf modeli varsa bu şekilde
+        ref: 'Class'
     }],
     yayinDurumu: {
         type: Boolean,

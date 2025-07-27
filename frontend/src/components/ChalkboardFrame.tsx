@@ -13,7 +13,6 @@ const ChalkboardFrame: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 fontFamily: '"Shadows Into Light", cursive',
                 boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
                 textShadow: '1px 1px 0 #000',
-
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
